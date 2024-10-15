@@ -6,63 +6,41 @@ import java.util.*;
 
 public class Main {
     public static void main(String[] args) {
-        Scanner s = new Scanner(System.in);
-
+        Scanner scanner = new Scanner(System.in);
         System.out.print("Enter the CSV filename: ");
-        String f = s.nextLine();
-
-        // Initializes an Arraylist containing a map with string key/value, and asks for a file name
-        // Then, it creates an array that splits the data by commas and puts them in the mp1
-        // method throws and exception error if file cannot be found
-        List<Map<String, String>> outerMap = new ArrayList<>();
-        try (Scanner fs = new Scanner(new File(f))) {
-            fs.nextLine();
-
-            while (fs.hasNextLine()) {
-                String[] v = fs.nextLine().split(",");
-
-                int chg = Integer.parseInt(v[2]);  
-
-                Map<String, String> dataMap = new HashMap<>();
-                dataMap.put("id", v[0]);  
-                dataMap.put("tm", v[1]);  
-                dataMap.put("chg", String.valueOf(chg));
-                outerMap.add(dataMap);
-            }
-        } catch (FileNotFoundException e) {
-            System.out.println("Error reading the file: " + e.getMessage());
-            s.close();
-            return;
-        }
+        String fileName = scanner.nextLine();
+        List<Map<String, String>> outerMap = parseCSV(fileName);
+        //System.out.println("Outer map: " + outerMap);
 
         // Creates a map name mp2 with string key and list containing map<string,string> 
         // loop goes through the map and gets the value from key "id"
         // 
-        Map<String, List<Map<String, String>>> mp2 = new HashMap<>();
-        for (Map<String, String> d : outerMap) {
-            String id = d.get("id");
-            List<Map<String, String>> lst = mp2.get(id);
+        Map<String, List<Map<String, String>>> forkIdData = new HashMap<>();
+        for (Map<String, String> item : outerMap) {
+            String id = item.get("id");
+            List<Map<String, String>> lst = forkIdData.get(id);
             if (lst == null) {
                 lst = new ArrayList<>();
-                mp2.put(id, lst);
+                forkIdData.put(id, lst);
             }
-            lst.add(d);
+            lst.add(item);
         }
-        System.out.println(mp2);
-        int cnt = mp2.size();
+        //System.out.println("Mp2: " + mp2);
+        int cnt = forkIdData.size();
 
         System.out.println("There are " + cnt + " forks available (fork1 to fork" + cnt + ").");
         System.out.print("Enter the fork number to analyze (or 'all' for all forks): ");
-        String inp = s.nextLine();
+        String inp = scanner.nextLine();
 
         List<Map<String, String>> sel;
         if (inp.equalsIgnoreCase("all")) {
             sel = outerMap;
         } else {
             String id = "fork" + inp; 
-            sel = mp2.get(id);
+            sel = forkIdData.get(id);
         }
 
+        
         int sz = sel.size();
 
         DateTimeFormatter f1 = DateTimeFormatter.ISO_DATE_TIME;
@@ -105,6 +83,35 @@ public class Main {
         System.out.println("Max lines changed in a commit: " + mx);
         System.out.println("Min lines changed in a commit: " + mn);
 
-        s.close();
+        scanner.close();
+    }
+
+    public static List<Map<String, String>> parseCSV(String filename) {
+        // Initializes an Arraylist containing a map with string key/value, and asks for a file name
+        // Then, it creates an array that splits the data by commas and puts them in the mp1
+        // method throws and exception error if file cannot be found
+        List<Map<String, String>> outerMap = new ArrayList<>();
+        try (Scanner fileIn = new Scanner(new File(filename))) {
+            fileIn.nextLine();
+
+            while (fileIn.hasNextLine()) {
+                String[] v = fileIn.nextLine().split(",");
+
+                int chg = Integer.parseInt(v[2]);  
+
+                Map<String, String> dataMap = new HashMap<>();
+                dataMap.put("id", v[0]);  
+                dataMap.put("tm", v[1]);  
+                dataMap.put("chg", String.valueOf(chg));
+                outerMap.add(dataMap);
+                
+                //System.out.println("Data map: " + dataMap);
+            }
+        } catch (FileNotFoundException e) {
+            System.out.println("Error reading the file: " + e.getMessage());
+            return null;
+        }
+
+        return outerMap;
     }
 }

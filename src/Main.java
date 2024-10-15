@@ -11,7 +11,10 @@ public class Main {
         System.out.print("Enter the CSV filename: ");
         String f = s.nextLine();
 
-        List<Map<String, String>> dta = new ArrayList<>();
+        // Initializes an Arraylist containing a map with string key/value, and asks for a file name
+        // Then, it creates an array that splits the data by commas and puts them in the mp1
+        // method throws and exception error if file cannot be found
+        List<Map<String, String>> outerMap = new ArrayList<>();
         try (Scanner fs = new Scanner(new File(f))) {
             fs.nextLine();
 
@@ -20,11 +23,11 @@ public class Main {
 
                 int chg = Integer.parseInt(v[2]);  
 
-                Map<String, String> mp1 = new HashMap<>();
-                mp1.put("id", v[0]);  
-                mp1.put("tm", v[1]);  
-                mp1.put("chg", String.valueOf(chg));
-                dta.add(mp1);
+                Map<String, String> dataMap = new HashMap<>();
+                dataMap.put("id", v[0]);  
+                dataMap.put("tm", v[1]);  
+                dataMap.put("chg", String.valueOf(chg));
+                outerMap.add(dataMap);
             }
         } catch (FileNotFoundException e) {
             System.out.println("Error reading the file: " + e.getMessage());
@@ -32,8 +35,11 @@ public class Main {
             return;
         }
 
+        // Creates a map name mp2 with string key and list containing map<string,string> 
+        // loop goes through the map and gets the value from key "id"
+        // 
         Map<String, List<Map<String, String>>> mp2 = new HashMap<>();
-        for (Map<String, String> d : dta) {
+        for (Map<String, String> d : outerMap) {
             String id = d.get("id");
             List<Map<String, String>> lst = mp2.get(id);
             if (lst == null) {
@@ -42,6 +48,7 @@ public class Main {
             }
             lst.add(d);
         }
+        System.out.println(mp2);
         int cnt = mp2.size();
 
         System.out.println("There are " + cnt + " forks available (fork1 to fork" + cnt + ").");
@@ -50,7 +57,7 @@ public class Main {
 
         List<Map<String, String>> sel;
         if (inp.equalsIgnoreCase("all")) {
-            sel = dta;
+            sel = outerMap;
         } else {
             String id = "fork" + inp; 
             sel = mp2.get(id);
